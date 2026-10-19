@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGIS Titik Rawan & Fasilitas Kampus</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { display: flex; flex-direction: column; height: 100vh; background-color: #f8fafc; }
+        header { background-color: #0f172a; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        header h1 { font-size: 1.2rem; }
+        .container { display: flex; flex: 1; overflow: hidden; }
+        #sidebar { width: 320px; background: white; padding: 20px; box-shadow: 2px 0 8px rgba(0,0,0,0.08); display: flex; flex-direction: column; gap: 15px; z-index: 1000; }
+        .card { background: #f1f5f9; padding: 14px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .card h3 { font-size: 0.95rem; margin-bottom: 10px; color: #1e293b; }
+        select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: white; font-size: 0.9rem; cursor: pointer; }
+        #map { flex: 1; height: 100%; }
+        .legend-item { display: flex; align-items: center; gap: 10px; margin-top: 8px; font-size: 0.85rem; color: #334155; }
+        .color-dot { width: 14px; height: 14px; border-radius: 50%; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>WebGIS Aktivitas Harian & Kampus</h1>
+        <span style="font-size: 0.85rem; color: #94a3b8;">Azalia Callysta (G1A025094)</span>
+    </header>
+
+    <div class="container">
+        <div id="sidebar">
+            <div class="card">
+                <h3>Filter Kategori Lokasi</h3>
+                <select id="filterCat" onchange="filterLocations()">
+                    <option value="all">Semua Lokasi Harian</option>
+                    <option value="Macet">Titik Rawan Kemacetan</option>
+                    <option value="Kampus">Area Kampus & Kuliah</option>
+                    <option value="Fasilitas">Fasilitas Umum (Cafe/Workspace)</option>
+                </select>
+            </div>
+
+            <div class="card">
+                <h3>Legenda Peta</h3>
+                <div class="legend-item"><div class="color-dot" style="background: #ef4444;"></div><span>Titik Macet Jam Pulang</span></div>
+                <div class="legend-item"><div class="color-dot" style="background: #3b82f6;"></div><span>Gedung Perkuliahan</span></div>
+                <div class="legend-item"><div class="color-dot" style="background: #10b981;"></div><span>Area Diskusi / Cafe</span></div>
+            </div>
+        </div>
+
+        <div id="map"></div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map').setView([-3.7928, 102.2608], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        const spots = [
+            { name: "Simpang Jalan Utama (Rawan Macet Sore)", category: "Macet", lat: -3.7900, lng: 102.2500, color: "#ef4444" },
+            { name: "Gedung Utama Universitas", category: "Kampus", lat: -3.7928, lng: 102.2608, color: "#3b82f6" },
+            { name: "Area Parkir & Gerbang Kampus", category: "Kampus", lat: -3.7950, lng: 102.2650, color: "#3b82f6" },
+            { name: "Cafe & Workspace Mahasiswa", category: "Fasilitas", lat: -3.7850, lng: 102.2550, color: "#10b981" }
+        ];
+
+        let markers = [];
+
+        function displaySpots(cat) {
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+
+            spots.forEach(spot => {
+                if (cat === 'all' || spot.category === cat) {
+                    const marker = L.circleMarker([spot.lat, spot.lng], {
+                        color: spot.color, fillColor: spot.color, fillOpacity: 0.8, radius: 10
+                    }).addTo(map);
+
+                    marker.bindPopup(`<b>${spot.name}</b><br>Kategori: ${spot.category}`);
+                    markers.push(marker);
+                }
+            });
+        }
+
+        function filterLocations() {
+            const selected = document.getElementById('filterCat').value;
+            displaySpots(selected);
+        }
+
+        displaySpots('all');
+    </script>
+</body>
+</html>
